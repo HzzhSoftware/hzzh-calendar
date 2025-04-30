@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/react-select": "^2.2.2",
+    "@radix-ui/react-slot": "^1.2.0",
     "add": "^2.0.6",
     "button": "^1.1.1",
     "card": "^2.5.4",
