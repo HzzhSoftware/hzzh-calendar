@@ -6,6 +6,7 @@ export interface MeetingType {
   price: number;
   description: string;
   iconType: 'chat' | 'video' | 'meeting' | 'Clock' | 'Users' | 'Video';
+  color?: string; // Optional color override
 }
 
 export interface User {
@@ -14,6 +15,8 @@ export interface User {
   name: string;
   email: string;
   timezone: string;
+  avatarUrl?: string;
+  bio?: string;
 }
 
 export interface Booking {

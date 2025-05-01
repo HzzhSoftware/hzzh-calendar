@@ -5,7 +5,9 @@
       "handle": "john-doe",
       "name": "John Doe",
       "email": "john@example.com",
-      "timezone": "America/New_York"
+      "timezone": "America/New_York",
+      "avatarUrl": "https://via.placeholder.com/96",
+      "bio": "Building great things"
     },
     {
       "id": "2",
@@ -23,7 +25,8 @@
       "duration": 15,
       "price": 0,
       "description": "A brief 15-minute discussion",
-      "iconType": "chat"
+      "iconType": "chat",
+      "color": "#8B5CF6"
     },
     {
       "id": "2",
@@ -32,7 +35,8 @@
       "duration": 60,
       "price": 100,
       "description": "One hour in-depth consultation",
-      "iconType": "video"
+      "iconType": "video",
+      "color": "#3B82F6"
     },
     {
       "id": "3",
