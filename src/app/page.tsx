@@ -5,7 +5,7 @@ export default function Home() {
     <div className="min-h-screen p-8 bg-gray-50">
       <main className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Welcome to Rambo</h1>
+          <h1 className="text-4xl font-bold mb-4">Welcome to Calendar</h1>
           <p className="text-xl text-gray-600 mb-8">
             The simple way to schedule meetings with your clients
           </p>
