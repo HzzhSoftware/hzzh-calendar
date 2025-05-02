@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+
+Resources:
+  RamboFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      MemorySize: 1024
+      Timeout: 30
+      Environment:
+        Variables:
+          NODE_ENV: !Ref Environment
+          NEXT_PUBLIC_API_URL: !Sub '${ApiUrl}'
+      Events:
+        HttpAPI:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+    Metadata:
+      DockerTag: nodejs18.x
+      DockerContext: ./
+      Dockerfile: Dockerfile
+
+  ApiUrl:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub rambo-api-${Environment}
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub https://${ApiUrl}.execute-api.${AWS::Region}.amazonaws.com/${Environment} 
