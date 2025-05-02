@@ -12,5 +12,5 @@ COPY . ${LAMBDA_TASK_ROOT}/
 # Build the application
 RUN npm run build
 
-# Set the handler
-CMD [ "dist/index.handler" ] 
+# Set the handler (updated path)
+CMD [ "lambda/handler.handler" ]
