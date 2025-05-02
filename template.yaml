@@ -2,42 +2,34 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
 Parameters:
-  Environment:
+  ImageUri:
     Type: String
-    Default: dev
-    AllowedValues:
-      - dev
-      - staging
-      - prod
+    Description: The URI of the container image
 
 Resources:
-  RamboFunction:
+  CalendarFunction:
     Type: AWS::Serverless::Function
     Properties:
       PackageType: Image
-      MemorySize: 1024
+      ImageUri: !Ref ImageUri
+      MemorySize: 1024  # Increased for Next.js app
       Timeout: 30
-      Environment:
-        Variables:
-          NODE_ENV: !Ref Environment
-          NEXT_PUBLIC_API_URL: !Sub '${ApiUrl}'
       Events:
-        HttpAPI:
-          Type: HttpApi
+        ApiEvent:
+          Type: Api
           Properties:
             Path: /{proxy+}
             Method: ANY
+      Environment:
+        Variables:
+          NODE_ENV: production
+      
     Metadata:
-      DockerTag: nodejs18.x
-      DockerContext: ./
+      DockerTag: nodejs18
+      DockerContext: .
       Dockerfile: Dockerfile
-
-  ApiUrl:
-    Type: AWS::ApiGateway::RestApi
-    Properties:
-      Name: !Sub rambo-api-${Environment}
 
 Outputs:
   ApiEndpoint:
-    Description: API Gateway endpoint URL
-    Value: !Sub https://${ApiUrl}.execute-api.${AWS::Region}.amazonaws.com/${Environment} 
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/" 
