@@ -1,16 +1,16 @@
 FROM public.ecr.aws/lambda/nodejs:18
 
-# Copy package files
-COPY package*.json ./
+# Copy package.json and package-lock.json
+COPY package*.json ${LAMBDA_TASK_ROOT}/
 
-# Install production dependencies
-RUN npm ci --production
+# Install dependencies
+RUN npm ci
 
-# Copy application code
-COPY . .
+# Copy rest of the application
+COPY . ${LAMBDA_TASK_ROOT}/
 
-# Build the Next.js application
+# Build the application
 RUN npm run build
 
-# Set the Lambda handler
-CMD [ "node_modules/.next/server/pages/api/lambda.js" ] 
+# Set the handler
+CMD [ "dist/index.handler" ] 
