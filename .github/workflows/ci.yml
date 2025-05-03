@@ -71,3 +71,4 @@ jobs:
           --region us-east-1 \
           --image-repository ${{ steps.login-ecr.outputs.registry }}/calendar-app \
           --parameter-overrides ImageUri=${{ steps.login-ecr.outputs.registry }}/calendar-app:${{ github.sha }} 
+          --CertificateArn=${{ secrets.CERTIFICATE_ARN }}
