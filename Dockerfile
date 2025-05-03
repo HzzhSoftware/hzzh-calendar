@@ -1,19 +1,18 @@
-FROM public.ecr.aws/lambda/nodejs:18
+# Use the official AWS base image for Lambda with Node.js
+FROM public.ecr.aws/lambda/nodejs18.x
 
 # Set working directory
-WORKDIR ${LAMBDA_TASK_ROOT}
+WORKDIR /var/task
 
-# Copy package files
+# Copy package files and install
 COPY package*.json ./
+RUN npm ci
 
-# Install production dependencies
-RUN npm ci --only=production
-
-# Copy application files
+# Copy rest of the app
 COPY . .
 
-# Build the Next.js application
+# Build the Next.js app
 RUN npm run build
 
-# Set the handler
-CMD [ "lambda/handler.handler" ]
+# Set handler to point to Next.js server
+CMD [ "server.handler" ]
