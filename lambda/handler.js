@@ -20,20 +20,38 @@ exports.handler = async (event, context) => {
       isAppPrepared = true;
     }
 
-    const { req, res } = createNextRequest(event);
-    await handle(req, res);
-    
-    return {
-      statusCode: res.statusCode,
-      headers: res.getHeaders(),
-      body: res.body,
-      isBase64Encoded: res.isBase64Encoded || false
-    };
+    return new Promise((resolve, reject) => {
+      const { req, res } = createNextRequest(event);
+      
+      handle(req, res)
+        .then(() => {
+          resolve({
+            statusCode: res.statusCode,
+            headers: {
+              'Content-Type': 'text/html; charset=utf-8',
+              ...res.getHeaders()
+            },
+            body: res.body,
+            isBase64Encoded: false
+          });
+        })
+        .catch(error => {
+          console.error('Next.js handler error:', error);
+          reject({
+            statusCode: 500,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ error: 'Internal Server Error' }),
+            isBase64Encoded: false
+          });
+        });
+    });
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Lambda handler error:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Internal Server Error' })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'Internal Server Error' }),
+      isBase64Encoded: false
     };
   }
 };
@@ -44,14 +62,19 @@ function createNextRequest(event) {
   const req = {
     method: httpMethod,
     url: path + (queryStringParameters ? '?' + new URLSearchParams(queryStringParameters).toString() : ''),
-    headers: headers,
+    headers: {
+      ...headers,
+      'x-forwarded-host': headers.Host || headers.host,
+      'x-real-ip': event.requestContext?.identity?.sourceIp,
+    },
     body: body,
-    on: (event, handler) => {}, // Mock stream events
-    connection: {},
-    socket: {},
+    connection: { encrypted: headers['x-forwarded-proto'] === 'https' },
+    on: (event, handler) => {},
+    off: () => {},
+    emit: () => {},
+    socket: { destroy: () => {} },
     destroy: () => {},
     setTimeout: () => {},
-    emit: () => {},
     removeListener: () => {}
   };
 
@@ -72,16 +95,39 @@ function createNextRequest(event) {
       delete this.headers[name.toLowerCase()];
     },
     write: function(chunk) {
-      this.body += chunk;
+      if (chunk) {
+        this.body += chunk.toString();
+      }
     },
     end: function(chunk) {
-      if (chunk) this.body += chunk;
+      if (chunk) {
+        this.body += chunk.toString();
+      }
     },
     on: () => {},
     once: () => {},
     emit: () => {},
     finished: true,
-    writableEnded: true
+    writableEnded: true,
+    setCharacterEncoding: () => {},
+    status: (code) => {
+      res.statusCode = code;
+      return res;
+    },
+    json: (data) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(data));
+      return res;
+    },
+    send: (data) => {
+      if (typeof data === 'string') {
+        res.setHeader('Content-Type', 'text/html');
+        res.end(data);
+      } else {
+        res.json(data);
+      }
+      return res;
+    }
   };
 
   return { req, res };
