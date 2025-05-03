@@ -30,7 +30,6 @@ Resources:
       Environment:
         Variables:
           NODE_ENV: production
-      
     Metadata:
       DockerTag: nodejs18
       DockerContext: .
@@ -75,17 +74,6 @@ Resources:
           AcmCertificateArn: !Ref CertificateArn
           SslSupportMethod: sni-only
           MinimumProtocolVersion: TLSv1.2_2021
-
-
-  DNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneName: kycombinator.com.
-      Name: !Ref DomainName
-      Type: A
-      AliasTarget:
-        DNSName: !GetAtt CloudFrontDistribution.DomainName
-        HostedZoneId: Z03959821AG8UGYCERATS
 
 Outputs:
   ApiEndpoint:
