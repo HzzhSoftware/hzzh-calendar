@@ -48,6 +48,14 @@ Resources:
           - !Ref DomainName
         Enabled: true
         DefaultCacheBehavior:
+          TargetOriginId: CalendarAPI
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad  # CachingDisabled policy
+          OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac  # AllViewerExceptHostHeader policy
+          ForwardedValues:
+            QueryString: true
+            Cookies:
+              Forward: all
+          Compress: true
           AllowedMethods:
             - GET
             - HEAD
@@ -56,7 +64,6 @@ Resources:
             - POST
             - PATCH
             - DELETE
-          TargetOriginId: CalendarAPI
           ViewerProtocolPolicy: redirect-to-https
           ForwardedValues:
             QueryString: true
@@ -67,8 +74,8 @@ Resources:
             Cookies:
               Forward: all
         Origins:
-          - DomainName: !Sub "${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com"
-            Id: CalendarAPI
+          - Id: CalendarAPI
+            DomainName: !Sub "${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com"
             OriginPath: '/Prod'
             CustomOriginConfig:
               HTTPSPort: 443
