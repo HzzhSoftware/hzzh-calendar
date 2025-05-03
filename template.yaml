@@ -83,7 +83,3 @@ Outputs:
   CloudFrontDomain:
     Description: "CloudFront Distribution Domain Name"
     Value: !GetAtt CloudFrontDistribution.DomainName
-  
-  CustomDomain:
-    Description: "Custom Domain Name"
-    Value: !Ref DomainName 
