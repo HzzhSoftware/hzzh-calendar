@@ -19,10 +19,15 @@ Resources:
     Properties:
       PackageType: Image
       ImageUri: !Ref ImageUri
-      MemorySize: 1024
-      Timeout: 30
+      MemorySize: 2048
+      Timeout: 60
       Events:
-        CloudFrontEvent:
+        RootPath:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /
+            Method: ANY
+        AnyPath:
           Type: Api
           Properties:
             Path: /{proxy+}
