@@ -12,6 +12,9 @@ Parameters:
   CertificateArn:
     Type: String
     Description: The ARN of the ACM certificate
+  HostedZoneId:
+    Type: String
+    Description: The hosted zone id
 
 Resources:
   CalendarFunction:
@@ -95,7 +98,7 @@ Resources:
       Type: A
       AliasTarget:
         DNSName: !GetAtt CloudFrontDistribution.DomainName
-        HostedZoneId: !Ref HostedZoneId
+        HostedZoneId: Z2FDTNDATAQYW2 # CloudFront's hosted zone ID
         EvaluateTargetHealth: false
 
 Outputs:
