@@ -2,32 +2,27 @@ const serverlessExpress = require('@vendia/serverless-express');
 const express = require('express');
 const next = require('next');
 
-const app = next({
-  dev: false,
-  conf: {
-    // This ensures Next looks in the right place
-    distDir: '.next',
-  }
-});
+let serverPromise;
 
-const handle = app.getRequestHandler();
+async function initServer() {
+  const app = next({ dev: false, conf: { distDir: '.next' } });
+  await app.prepare();
 
-let server;
-
-app.prepare().then(() => {
   const expressApp = express();
 
   expressApp.all('*', (req, res) => {
-    return handle(req, res);
+    return app.getRequestHandler()(req, res);
   });
 
-  server = serverlessExpress({ app: expressApp });
-});
+  return serverlessExpress({ app: expressApp });
+}
 
-// Export the Lambda handler
+// Kick off initialization once, lazily
 exports.handler = async (event, context) => {
-  if (!server) {
-    throw new Error("Server not initialized");
+  if (!serverPromise) {
+    serverPromise = initServer();
   }
+
+  const server = await serverPromise;
   return server(event, context);
 };
