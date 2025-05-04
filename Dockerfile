@@ -1,17 +1,33 @@
-# Use the official AWS base image for Lambda with Node.js
+# -------- Stage 1: Build Next.js app --------
+    FROM node:18-alpine AS builder
+
+    WORKDIR /app
+    
+    # Copy Next.js app files
+    COPY package*.json ./
+    COPY . .
+    
+    # Install deps and build
+    RUN npm install && npm run build
+    
+
+# -------- Stage 2: Build Lambda runtime --------
 FROM public.ecr.aws/lambda/nodejs:18
 
-# Set working directory
+# Set working directory in Lambda container
 WORKDIR /var/task
 
-# Copy the lambda code
-COPY lambda/ .
-
-# Copy only the lambda folder into the container
+# Copy Lambda package.json and install Lambda-specific deps
+COPY lambda/package*.json ./
 RUN npm install
 
-# Build the Next.js app
-RUN npm run build
+# Copy Lambda server code
+COPY lambda/server.js ./
 
-# Set handler to point to Next.js server
+# Copy built Next.js app from builder stage
+COPY --from=builder /app/.next .next
+COPY --from=builder /app/public public
+COPY --from=builder /app/next.config.js .
+
+# Set Lambda handler
 CMD [ "server.handler" ]
