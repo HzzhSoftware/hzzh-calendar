@@ -8,6 +8,8 @@ export default function Home() {
           <h1 className="text-4xl font-bold mb-4">Welcome to Calendar</h1>
           <p className="text-xl text-gray-600 mb-8">
             The simple way to schedule meetings with your clients
+            <br />
+            {process.env.NEXT_PUBLIC_CDN_URL}
           </p>
           <div className="flex justify-center gap-4">
             <Link
