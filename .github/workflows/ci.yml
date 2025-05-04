@@ -35,9 +35,10 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
         NEXT_PUBLIC_CDN_URL: ${{ secrets.NEXT_PUBLIC_CDN_URL }}
       run: |
+        echo "Using CDN: $NEXT_PUBLIC_CDN_URL"
         docker build \
-        --build-arg NEXT_PUBLIC_CDN_URL=${NEXT_PUBLIC_CDN_URL} \
-        -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          --build-arg NEXT_PUBLIC_CDN_URL=$NEXT_PUBLIC_CDN_URL \
+          -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
     - name: Set up Python
