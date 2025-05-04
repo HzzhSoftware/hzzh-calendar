@@ -1,0 +1,15 @@
+{
+    "name": "next-lambda-server",
+    "version": "1.0.0",
+    "main": "server.js",
+    "type": "commonjs",
+    "scripts": {
+      "start": "node server.js"
+    },
+    "dependencies": {
+      "@vendia/serverless-express": "^4.8.0",
+      "express": "^4.18.2",
+      "next": "^14.1.0"
+    }
+  }
+  
