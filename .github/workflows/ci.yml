@@ -77,4 +77,5 @@ jobs:
           --parameter-overrides \
             ImageUri=${{ steps.login-ecr.outputs.registry }}/${{ env.APP_NAME }}-app:${{ github.sha }} \
             CertificateArn=${{ secrets.CERTIFICATE_ARN }} \
-            DomainName=${{ env.APP_NAME }}.kycombinator.com
+            DomainName=${{ env.APP_NAME }}.kycombinator.com \
+            HostedZoneId=${{ secrets.HOSTED_ZONE_ID }}
