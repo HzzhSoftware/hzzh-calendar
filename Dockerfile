@@ -1,14 +1,18 @@
 # -------- Stage 1: Build Next.js app --------
-    FROM node:18-alpine AS builder
+FROM node:18-alpine AS builder
 
-    WORKDIR /app
-    
-    # Copy Next.js app files
-    COPY package*.json ./
-    COPY . .
-    
-    # Install deps and build
-    RUN npm install && npm run build
+# Add build argument
+ARG NEXT_PUBLIC_CDN_URL
+ENV NEXT_PUBLIC_CDN_URL=${NEXT_PUBLIC_CDN_URL}
+
+WORKDIR /app
+
+# Copy Next.js app files
+COPY package*.json ./
+COPY . .
+
+# Install deps and build
+RUN npm install && npm run build
     
 
 # -------- Stage 2: Build Lambda runtime --------
