@@ -8,7 +8,7 @@ WORKDIR /var/task
 COPY lambda/ .
 
 # Copy only the lambda folder into the container
-RUN npm ci
+RUN npm install
 
 # Build the Next.js app
 RUN npm run build
