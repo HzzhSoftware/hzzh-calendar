@@ -26,8 +26,8 @@ COPY lambda/server.js ./
 
 # Copy built Next.js app from builder stage
 COPY --from=builder /app/.next .next
-COPY --from=builder /app/next.config.js .
-## COPY --from=builder /app/public public
+# COPY --from=builder /app/next.config.js .
+# COPY --from=builder /app/public public
 
 # Set Lambda handler
 CMD [ "server.handler" ]
