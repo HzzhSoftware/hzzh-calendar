@@ -1,9 +1,11 @@
 import Link from 'next/link';
+import Header from '@/components/Header';
 
 export default function Home() {
   return (
-    <div className="min-h-screen p-8 bg-gray-50">
-      <main className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <main className="max-w-4xl mx-auto p-8">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Welcome to Calendar</h1>
           <p className="text-xl text-gray-600 mb-8">
