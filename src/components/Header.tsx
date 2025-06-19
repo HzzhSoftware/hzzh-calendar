@@ -31,7 +31,7 @@ export default function Header() {
                 )}
                 <span className="text-gray-700">{user.email}</span>
                 <button
-                  onClick={}
+                  onClick={() => {}}
                   className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
                 >
                   Sign Out
@@ -39,7 +39,7 @@ export default function Header() {
               </div>
             ) : (
               <button
-                onClick={}
+                onClick={() => {}}
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Sign In with Google
