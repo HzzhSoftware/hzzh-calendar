@@ -2,7 +2,7 @@ import { MeetingType, User } from '@/types/meeting';
 
 export async function getMeetingTypes(handle: string): Promise<MeetingType[]> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/${handle}/meeting-types`);
+    const response = await fetch(`https://api.kycombinator.com/calendar/users/${handle}/meeting-types`);
     
     if (!response.ok) {
       const errorData = await response.json();
@@ -18,7 +18,7 @@ export async function getMeetingTypes(handle: string): Promise<MeetingType[]> {
 
 export async function getUser(handle: string): Promise<User> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/${handle}`);
+    const response = await fetch(`https://api.kycombinator.com/calendar/users/${handle}`);
 
     if (!response.ok) {
       const errorData = await response.json();
