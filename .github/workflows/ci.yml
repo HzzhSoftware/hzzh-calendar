@@ -9,6 +9,8 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_CDN_URL: ${{ secrets.NEXT_PUBLIC_CDN_URL }}
     steps:
     - uses: actions/checkout@v4
 
@@ -18,9 +20,8 @@ jobs:
         node-version: '20'
 
     - name: Install deps & build OpenNext
-      env:
-        NEXT_PUBLIC_CDN_URL: ${{ secrets.NEXT_PUBLIC_CDN_URL }}
       run: |
+        NEXT_PUBLIC_CDN_URL: ${{ secrets.NEXT_PUBLIC_CDN_URL }}
         npm ci
         npx open-next build
 
