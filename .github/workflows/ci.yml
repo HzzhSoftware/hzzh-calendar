@@ -23,7 +23,6 @@ jobs:
 
     - name: Install deps & build OpenNext
       run: |
-        NEXT_PUBLIC_CDN_URL: ${{ secrets.NEXT_PUBLIC_CDN_URL }}
         npm ci
         npx open-next build
 
