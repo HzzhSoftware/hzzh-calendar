@@ -1,4 +1,4 @@
-import { MeetingType, User } from '@/types/meeting';
+import { MeetingType, User } from '@/types/calendar';
 
 export async function getMeetingTypes(handle: string): Promise<MeetingType[]> {
   try {

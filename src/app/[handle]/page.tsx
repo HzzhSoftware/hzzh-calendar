@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Clock, Users, Video, MessageCircle } from "lucide-react";
 import { getMeetingTypes, getUser } from '@/lib/api';
-import { MeetingType } from '@/types/meeting';
+import { MeetingType } from '@/types/calendar';
 import Image from 'next/image';
 
 interface ProfilePageProps {
