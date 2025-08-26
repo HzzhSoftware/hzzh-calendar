@@ -9,6 +9,7 @@ const Sidebar = ({ currentRoute }: SidebarProps) => {
     if (route === '/calendar' && currentRoute === '/calendar') return true;
     if (route === '/calendar/meeting' && currentRoute === '/calendar/meeting') return true;
     if (route === '/calendar/availability' && currentRoute === '/calendar/availability') return true;
+    if (route === '/calendar/sync' && currentRoute === '/calendar/sync') return true;
     return false;
   };
 
@@ -38,6 +39,12 @@ const Sidebar = ({ currentRoute }: SidebarProps) => {
           className={getActiveClasses('/calendar/availability')}
         >
           Availability
+        </Link>
+        <Link 
+          href="/calendar/sync" 
+          className={getActiveClasses('/calendar/sync')}
+        >
+          Sync
         </Link>
       </nav>
     </aside>

@@ -1,106 +1,105 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-type EventType = {
-  id: string;
-  title: string;
-  duration: string;
-  location: string;
-  format: string;
-  availability: string;
-  active: boolean;
-};
+import { MeetingType } from '@/types/calendar';
 
 interface CalendarContextType {
-  eventTypes: EventType[];
-  selectedEventType: string | null;
-  addEventType: (eventType: Omit<EventType, 'id'>) => void;
-  updateEventType: (id: string, updates: Partial<EventType>) => void;
-  deleteEventType: (id: string) => void;
-  toggleEventTypeActive: (id: string) => void;
-  selectEventType: (id: string | null) => void;
+  meetingTypes: MeetingType[];
+  selectedMeetingType: string | null;
+  addMeetingType: (meetingType: Omit<MeetingType, 'id'>) => void;
+  updateMeetingType: (id: string, updates: Partial<MeetingType>) => void;
+  deleteMeetingType: (id: string) => void;
+  toggleMeetingTypeActive: (id: string) => void;
+  selectMeetingType: (id: string | null) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   selectedCalendar: string;
   setSelectedCalendar: (calendar: string) => void;
-  activeTab: 'event-types' | 'single-use-links' | 'meeting-polls';
-  setActiveTab: (tab: 'event-types' | 'single-use-links' | 'meeting-polls') => void;
+  activeTab: 'meeting-types' | 'single-use-links' | 'meeting-polls';
+  setActiveTab: (tab: 'meeting-types' | 'single-use-links' | 'meeting-polls') => void;
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
-const initialEventTypes: EventType[] = [
+const initialMeetingTypes: MeetingType[] = [
   {
     id: '1',
-    title: 'ION Water',
-    duration: '30 min',
+    userId: '1',
+    name: 'ION Water',
+    duration: 30,
+    price: 0,
+    timezone: 'America/New_York',
+    iconType: 'chat',
     location: 'Google Meet',
-    format: 'One‑on‑One',
-    availability: 'Weekdays, hours vary',
+    type: 'virtual',
+    description: 'Weekdays, hours vary',
     active: true,
   },
   {
     id: '2',
-    title: 'KYCombinator – Due Diligence',
-    duration: '1 hr',
+    userId: '1',
+    name: 'KYCombinator – Due Diligence',
+    duration: 60,
+    price: 0,
+    timezone: 'America/New_York',
+    iconType: 'chat',
     location: 'Google Meet',
-    format: 'One‑on‑One',
-    availability: 'Thu, Fri, Sat, hours vary',
+    type: 'virtual',
+    description: 'Thu, Fri, Sat, hours vary',
     active: false,
   },
 ];
 
 export function CalendarProvider({ children }: { children: ReactNode }) {
-  const [eventTypes, setEventTypes] = useState<EventType[]>(initialEventTypes);
-  const [selectedEventType, setSelectedEventType] = useState<string | null>(null);
+  const [meetingTypes, setMeetingTypes] = useState<MeetingType[]>(initialMeetingTypes);
+  const [selectedMeetingType, setSelectedMeetingType] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCalendar, setSelectedCalendar] = useState('my-home-calendar');
-  const [activeTab, setActiveTab] = useState<'event-types' | 'single-use-links' | 'meeting-polls'>('event-types');
+  const [activeTab, setActiveTab] = useState<'meeting-types' | 'single-use-links' | 'meeting-polls'>('meeting-types');
 
-  const addEventType = (eventType: Omit<EventType, 'id'>) => {
-    const newEventType: EventType = {
-      ...eventType,
+  const addMeetingType = (meetingType: Omit<MeetingType, 'id'>) => {
+    const newMeetingType: MeetingType = {
+      ...meetingType,
       id: Date.now().toString(),
     };
-    setEventTypes(prev => [...prev, newEventType]);
+    setMeetingTypes(prev => [...prev, newMeetingType]);
   };
 
-  const updateEventType = (id: string, updates: Partial<EventType>) => {
-    setEventTypes(prev => 
-      prev.map(event => 
-        event.id === id ? { ...event, ...updates } : event
+  const updateMeetingType = (id: string, updates: Partial<MeetingType>) => {
+    setMeetingTypes(prev => 
+      prev.map(meeting => 
+        meeting.id === id ? { ...meeting, ...updates } : meeting
       )
     );
   };
 
-  const deleteEventType = (id: string) => {
-    setEventTypes(prev => prev.filter(event => event.id !== id));
-    if (selectedEventType === id) {
-      setSelectedEventType(null);
+  const deleteMeetingType = (id: string) => {
+    setMeetingTypes(prev => prev.filter(meeting => meeting.id !== id));
+    if (selectedMeetingType === id) {
+      setSelectedMeetingType(null);
     }
   };
 
-  const toggleEventTypeActive = (id: string) => {
-    setEventTypes(prev => 
-      prev.map(event => 
-        event.id === id ? { ...event, active: !event.active } : event
+  const toggleMeetingTypeActive = (id: string) => {
+    setMeetingTypes(prev => 
+      prev.map(meeting => 
+        meeting.id === id ? { ...meeting, active: !meeting.active } : meeting
       )
     );
   };
 
-  const selectEventType = (id: string | null) => {
-    setSelectedEventType(id);
+  const selectMeetingType = (id: string | null) => {
+    setSelectedMeetingType(id);
   };
 
   const value: CalendarContextType = {
-    eventTypes,
-    selectedEventType,
-    addEventType,
-    updateEventType,
-    deleteEventType,
-    toggleEventTypeActive,
-    selectEventType,
+    meetingTypes,
+    selectedMeetingType,
+    addMeetingType,
+    updateMeetingType,
+    deleteMeetingType,
+    toggleMeetingTypeActive,
+    selectMeetingType,
     searchQuery,
     setSearchQuery,
     selectedCalendar,

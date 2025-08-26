@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Calender - Book your meetings",
-  description: "Calender is a simple way to schedule meetings with your clients",
+  title: "Calendar - Book your meetings",
+  description: "Calendar is a simple way to schedule meetings with your clients",
   icons: {
     icon: `${process.env.NEXT_PUBLIC_CDN_URL}/favicon.ico`,
   },
