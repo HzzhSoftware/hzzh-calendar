@@ -8,7 +8,7 @@ import AddCalendarModal from './AddCalendarModal';
 
 function SyncPageContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [calendars, setCalendars] = useState<Calendar[]>([
+  const [calendars, ] = useState<Calendar[]>([
     {
       id: '1',
       name: 'My Home Calendar',
@@ -50,21 +50,6 @@ function SyncPageContent() {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-  };
-
-  const handleAddNewCalendar = (newCalendar: Omit<Calendar, 'id'>) => {
-    const calendarWithId: Calendar = {
-      ...newCalendar,
-      id: Date.now().toString(),
-    };
-    
-    setCalendars(prev => [calendarWithId, ...prev]);
-    
-    // In a real app, you would also:
-    // 1. Send the calendar data to your backend
-    // 2. Initiate OAuth flow with the selected provider
-    // 3. Handle the authorization callback
-    console.log('Adding new calendar:', calendarWithId);
   };
 
   const getStatusColor = (status: Calendar['syncStatus']) => {
@@ -244,7 +229,6 @@ function SyncPageContent() {
       <AddCalendarModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onAddCalendar={handleAddNewCalendar}
       />
     </div>
   );
