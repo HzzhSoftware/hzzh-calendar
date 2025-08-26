@@ -1,16 +1,53 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar } from '@/types/calendar';
 
 interface AddCalendarModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddCalendar: (calendar: Omit<Calendar, 'id'>) => void;
 }
 
-const AddCalendarModal = ({ isOpen, onClose, onAddCalendar }: AddCalendarModalProps) => {
-  const [selectedType, setSelectedType] = useState<Calendar['type']>('google');
+// OAuth Configuration - these would come from environment variables or config
+const OAUTH_CONFIG = {
+  google: {
+    clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID',
+    scope: 'https://www.googleapis.com/auth/calendar',
+    authUrl: 'https://accounts.google.com/o/oauth2/v2/auth'
+  },
+  outlook: {
+    clientId: process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID || 'YOUR_OUTLOOK_CLIENT_ID',
+    scope: 'https://graph.microsoft.com/Calendars.ReadWrite',
+    authUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
+  },
+  apple: {
+    clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || 'YOUR_APPLE_CLIENT_ID',
+    scope: 'name email',
+    authUrl: 'https://appleid.apple.com/auth/authorize'
+  }
+};
+
+// Helper function to build OAuth URLs
+const buildOAuthUrl = (provider: keyof typeof OAUTH_CONFIG, redirectUri: string) => {
+  const config = OAUTH_CONFIG[provider];
+  const params = new URLSearchParams({
+    client_id: config.clientId,
+    response_type: 'code',
+    scope: config.scope,
+    redirect_uri: redirectUri,
+    ...(provider === 'google' && {
+      access_type: 'offline',
+      prompt: 'consent'
+    }),
+    ...(provider === 'outlook' && {
+      response_mode: 'query'
+    })
+  });
+  
+  return `${config.authUrl}?${params.toString()}`;
+};
+
+const AddCalendarModal = ({ isOpen, onClose }: AddCalendarModalProps) => {
+  const [selectedType, setSelectedType] = useState<keyof typeof OAUTH_CONFIG>('google');
   const [calendarName, setCalendarName] = useState('');
   const [email, setEmail] = useState('');
 
@@ -21,19 +58,27 @@ const AddCalendarModal = ({ isOpen, onClose, onAddCalendar }: AddCalendarModalPr
       return;
     }
 
-    const newCalendar: Omit<Calendar, 'id'> = {
+    // Build the OAuth URL for the selected provider
+    const redirectUri = `${window.location.origin}/api/calendars/oauth/callback`;
+    const oauthUrl = buildOAuthUrl(selectedType, redirectUri);
+    
+    // Store the calendar info temporarily (you might want to use localStorage or context)
+    const tempCalendarData = {
       name: calendarName.trim(),
       type: selectedType,
       email: email.trim(),
       isActive: true,
       lastSync: new Date().toISOString(),
-      syncStatus: 'syncing',
+      syncStatus: 'syncing' as const,
       color: getDefaultColor(selectedType),
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
     };
-
-    onAddCalendar(newCalendar);
-    handleClose();
+    
+    // Store in sessionStorage for the OAuth callback to retrieve
+    sessionStorage.setItem('pendingCalendar', JSON.stringify(tempCalendarData));
+    
+    // Redirect to OAuth provider
+    window.location.href = oauthUrl;
   };
 
   const handleClose = () => {
@@ -43,7 +88,7 @@ const AddCalendarModal = ({ isOpen, onClose, onAddCalendar }: AddCalendarModalPr
     onClose();
   };
 
-  const getDefaultColor = (type: Calendar['type']) => {
+  const getDefaultColor = (type: keyof typeof OAUTH_CONFIG) => {
     switch (type) {
       case 'google':
         return '#4285f4';
@@ -56,7 +101,7 @@ const AddCalendarModal = ({ isOpen, onClose, onAddCalendar }: AddCalendarModalPr
     }
   };
 
-  const getCalendarIcon = (type: Calendar['type']) => {
+  const getCalendarIcon = (type: keyof typeof OAUTH_CONFIG) => {
     switch (type) {
       case 'google':
         return (
@@ -170,6 +215,9 @@ const AddCalendarModal = ({ isOpen, onClose, onAddCalendar }: AddCalendarModalPr
           <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
             <p className="text-sm text-blue-700">
               You&apos;ll be redirected to {selectedType} to authorize access to your calendar.
+            </p>
+            <p className="text-xs text-blue-600 mt-1">
+              Required scope: {OAUTH_CONFIG[selectedType].scope}
             </p>
           </div>
         </form>
