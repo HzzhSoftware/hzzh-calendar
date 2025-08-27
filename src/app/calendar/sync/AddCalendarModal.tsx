@@ -3,62 +3,43 @@
 import React from "react";
 
 /**
- * A simple modal for connecting calendars. Instead of collecting a name and email,
- * this component presents three provider options (Google, Outlook, and Apple)
- * that fill the available width. When the user clicks a provider, they are
- * redirected to the appropriate OAuth authorization URL.
+ * A modal for connecting calendars through our internal API. This component
+ * presents three provider options (Google, Outlook, and Apple) that fill the
+ * available width. When the user clicks a provider, they are redirected to
+ * our internal OAuth endpoint, which then handles the OAuth flow with the
+ * provider and sets up webhooks for real-time calendar updates.
  *
- * The callback URLs for each provider are defined at the top of the file
- * as constants. Adjust these values to match the OAuth redirect URIs
- * configured in your identity providers.
+ * The OAuth flow works as follows:
+ * 1. User clicks a provider button
+ * 2. Redirected to our internal OAuth endpoint (e.g., /calendar/oauth/google)
+ * 3. Our backend redirects to the provider's OAuth page
+ * 4. After authorization, provider redirects to our callback endpoint
+ * 5. Our backend processes the OAuth response and stores tokens
+ * 6. User is redirected back with success parameters
+ * 7. Frontend automatically sets up webhook for real-time updates
  */
 
-// OAuth Configuration - these would come from environment variables or config
-const OAUTH_CONFIG = {
+// Internal API Configuration
+const API_CONFIG = {
+  baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.kycombinator.com',
+  calendarApi: process.env.NEXT_PUBLIC_CALENDAR_API_URL || 'https://api.kycombinator.com/calendar',
+};
+
+// OAuth endpoints for different providers
+const OAUTH_ENDPOINTS = {
   google: {
-    clientId: process.env.NEXT_PUBLIC_GOOGLE_OAUTH_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID',
-    scope: 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events',
-    authUrl: 'https://accounts.google.com/o/oauth2/v2/auth'
+    auth: `${API_CONFIG.calendarApi}/oauth/google`,
+    webhookSetup: `${API_CONFIG.calendarApi}/webhook/google/calendar/setup`,
   },
   outlook: {
-    clientId: process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID || 'YOUR_OUTLOOK_CLIENT_ID',
-    scope: 'https://graph.microsoft.com/Calendars.ReadWrite',
-    authUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
+    auth: `${API_CONFIG.calendarApi}/oauth/outlook`, // When you implement Outlook
+    webhookSetup: `${API_CONFIG.calendarApi}/webhook/outlook/calendar/setup`,
   },
   apple: {
-    clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || 'YOUR_APPLE_CLIENT_ID',
-    scope: 'name email',
-    authUrl: 'https://appleid.apple.com/auth/authorize'
+    auth: `${API_CONFIG.calendarApi}/oauth/apple`, // When you implement Apple
+    webhookSetup: `${API_CONFIG.calendarApi}/webhook/apple/calendar/setup`,
   }
 };
-
-// Helper function to build OAuth URLs
-const buildOAuthUrl = (provider: keyof typeof OAUTH_CONFIG, redirectUri: string) => {
-  const config = OAUTH_CONFIG[provider];
-  const params = new URLSearchParams({
-    client_id: config.clientId,
-    response_type: 'code',
-    scope: config.scope,
-    redirect_uri: redirectUri,
-    ...(provider === 'google' && {
-      access_type: 'offline',
-      prompt: 'consent'
-    }),
-    ...(provider === 'outlook' && {
-      response_mode: 'query'
-    })
-  });
-  
-  return `${config.authUrl}?${params.toString()}`;
-};
-
-// --- OAuth callback configuration ---
-// You can modify these constants to point to the correct OAuth redirect
-// endpoints in your application. Ensure they match the values configured
-// in the provider's console.
-const GOOGLE_CALLBACK = "https://api.kycombinator.com/auth/oauth/google/callback";
-const OUTLOOK_CALLBACK = "/api/oauth/outlook/callback";
-const APPLE_CALLBACK = "/api/oauth/apple/callback";
 
 interface ConnectCalendarModalProps {
   /**
@@ -75,27 +56,92 @@ export default function ConnectCalendarModal({
   isOpen,
   onClose,
 }: ConnectCalendarModalProps) {
+  // Check for OAuth success parameters when component mounts
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const oauthSuccess = urlParams.get('oauth_success');
+    const provider = urlParams.get('provider');
+    const email = urlParams.get('email');
+    const userId = urlParams.get('user_id');
+
+    if (oauthSuccess === 'true' && provider && email && userId) {
+      console.log(`OAuth successful for ${provider}:`, { email, userId });
+      
+      // Automatically set up webhook for the connected calendar
+      if (provider === 'google') {
+        setupCalendarWebhook(userId, provider);
+      }
+      
+      // Clean up URL parameters
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('oauth_success');
+      newUrl.searchParams.delete('provider');
+      newUrl.searchParams.delete('email');
+      newUrl.searchParams.delete('user_id');
+      window.history.replaceState({}, '', newUrl.toString());
+      
+      // Close the modal and show success message
+      onClose();
+      // You might want to show a toast notification here
+      alert(`Successfully connected ${provider} calendar for ${email}!`);
+    }
+  }, [onClose]);
+
   if (!isOpen) return null;
 
   /**
-   * Construct the full authorization URL for a given provider. This function
-   * now uses the parameterized OAuth configuration.
+   * Get the OAuth URL for a given provider from our internal API.
+   * This will redirect to our backend, which then redirects to the provider.
    */
   const getOAuthUrl = (type: "google" | "outlook" | "apple") => {
-    const redirectUri = type === "google" ? GOOGLE_CALLBACK : 
-                       type === "outlook" ? OUTLOOK_CALLBACK : APPLE_CALLBACK;
-    return buildOAuthUrl(type, redirectUri);
+    const endpoint = OAUTH_ENDPOINTS[type].auth;
+    // Include the current page as the redirect target after OAuth completion
+    const redirectUri = encodeURIComponent(window.location.href);
+    return `${endpoint}?redirect=${redirectUri}`;
   };
 
   /**
-   * Redirect to the provider's OAuth page. In a real application you may
-   * want to include a CSRF state parameter here.
+   * Handle calendar connection. This function:
+   * 1. Redirects to our internal OAuth endpoint
+   * 2. Our backend handles the OAuth flow with the provider
+   * 3. User gets redirected back with success/error parameters
    */
   const handleConnect = (type: "google" | "outlook" | "apple") => {
     const url = getOAuthUrl(type);
-    // Perform the redirect. Using window.location.assign ensures the user
-    // doesn't remain in a single-page app history state.
+    console.log(`Redirecting to ${type} OAuth via internal API:`, url);
+    
+    // Perform the redirect to our internal OAuth endpoint
     window.location.assign(url);
+  };
+
+  /**
+   * Set up webhook for the connected calendar to receive real-time updates
+   */
+  const setupCalendarWebhook = async (userId: string, provider: string) => {
+    try {
+      const webhookUrl = `${API_CONFIG.calendarApi}/webhook/${provider}/calendar`;
+      
+      const response = await fetch(OAUTH_ENDPOINTS[provider as keyof typeof OAUTH_ENDPOINTS].webhookSetup, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          webhookUrl,
+          calendarId: 'primary' // Default to primary calendar
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Webhook set up successfully:', result);
+      } else {
+        console.error('Failed to set up webhook:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('Error setting up webhook:', error);
+    }
   };
 
   return (
